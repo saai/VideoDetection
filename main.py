@@ -3,10 +3,10 @@ import os
 import uuid
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-import subprocess as sp
 from distutils.dir_util import mkpath
-
 from werkzeug import secure_filename
+
+import subprocess as sp
 
 app = Flask(__name__)
 
@@ -19,7 +19,7 @@ FFMPEG_BIN = "ffmpeg"
 def get_frames(filename, output_dir):
     command = [ FFMPEG_BIN,
         '-i', filename,
-        '-r', '1',
+        '-r', '0.5',
         '-q:v', '2',
         '-f', 'image2',
         output_dir + '/frames-%d.jpeg'
@@ -42,7 +42,9 @@ def generate_task():
     mkpath('tasks/' + task_id + '/frames')
     return task_id
 
-@app.route('/upload', methods=['POST'])
+# save files -> get_fames-> process_images()
+# return processed image url json
+@app.route('/upload', methods=['POST']) 
 def upload():
     file = request.files['file']
     if file and allowed_file(file.filename):
@@ -54,6 +56,7 @@ def upload():
         return 'OK ' + task_id
 
 if __name__ == '__main__':
+    mkpath('uploads/')
     app.run(
         host="0.0.0.0",
         port=int("8066"),
