@@ -3,20 +3,24 @@
   <head>
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
           rel="stylesheet">
+    {% if loading %}
     <meta http-equiv="refresh" content="3">
+    {% endif %}
   </head>
   <body>
     <div class="container">
-    {{ loading_text }}
+    {% if loading %}
+      <h4>Loading...</h4>
+    {% endif %}
 
     <div class="row">
-    	{% for path in paths %}
-	      <div class="col-md-3">
-		<a href="/static/{{ path }}" class="thumbnail">
-		  <img src="/static/{{ path }}"/>
-		</a>
-	      </div>
-    	{% endfor %}
+      {% for path in paths %}
+        <div class="col-md-3">
+    <a href="/static/{{ path }}" class="thumbnail">
+      <img src="/static/{{ path }}"/>
+    </a>
+        </div>
+      {% endfor %}
     </div>
 
     </div>
