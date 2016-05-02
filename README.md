@@ -1,2 +1,2 @@
 # VideoDetection
-A sample project for identifying human face. 
+A sample project for identifying person in video. 
