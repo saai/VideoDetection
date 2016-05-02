@@ -5,12 +5,15 @@ import uuid
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from distutils.dir_util import mkpath
 from werkzeug import secure_filename
+from celery import Celery
 
 import subprocess as sp
 
 app = Flask(__name__)
+job_queue = Celery('tasks',backend='redis://localhost',broker='redis://localhost//')
 
 app.config['UPLOAD_FOLDER'] = 'uploads/'
+mkpath('uploads/')
 
 # for Linux / Mac
 FFMPEG_BIN = "ffmpeg"
@@ -53,10 +56,18 @@ def upload():
         filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filename)
         get_frames(filename, 'tasks/' + task_id + '/frames')
+        task_path = os.path.abspath('tasks/' + task_id)
+        detect_job(os.path.join(task_path, 'frames'), os.path.join(task_path, 'results')) 
         return 'OK ' + task_id
 
+def detect_job(frames_dir, result_dir):
+    files = os.listdir(frames_dir) 
+    for fname in files:
+        in_file = os.path.join(frames_dir, fname)
+        out_file = os.path.join(result_dir, fname)
+    job_queue.send_task('detect_img', [in_file, out_file])
+
 if __name__ == '__main__':
-    mkpath('uploads/')
     app.run(
         host="0.0.0.0",
         port=int("8066"),
