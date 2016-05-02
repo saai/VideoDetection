@@ -1,13 +1,13 @@
 #encoding=utf-8
 import os
 import uuid
+import subprocess as sp
 
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from distutils.dir_util import mkpath
 from werkzeug import secure_filename
 from celery import Celery
 
-import subprocess as sp
 
 app = Flask(__name__)
 job_queue = Celery('tasks',backend='redis://localhost',broker='redis://localhost//')
@@ -34,6 +34,18 @@ def get_frames(filename, output_dir):
 def index():
     return render_template('index.html')
 
+@app.route('/result/<task_id>')
+def result(task_id):
+    task_path = os.path.abspath('tasks/' + task_id)
+    result_path = os.path.join(task_path, 'results')
+    files = os.listdir(result_path) 
+    paths = [task_id + '/results/' +fname for fname in files]
+    paths.sort()
+    loading_text = ''
+    if len(paths) == 0:
+        loading_text = 'loading...'
+    return render_template('result.html', paths = paths, loading_text = loading_text)
+
 # for given filename, return wheather it's an allowed type or not
 # for debugging, we always return true.
 def allowed_file(filename):
@@ -43,6 +55,7 @@ def generate_task():
     task_id = str(uuid.uuid1())
     mkpath('tasks/' + task_id)
     mkpath('tasks/' + task_id + '/frames')
+    mkpath('tasks/' + task_id + '/results')
     return task_id
 
 # save files -> get_fames-> process_images()
@@ -58,7 +71,7 @@ def upload():
         get_frames(filename, 'tasks/' + task_id + '/frames')
         task_path = os.path.abspath('tasks/' + task_id)
         detect_job(os.path.join(task_path, 'frames'), os.path.join(task_path, 'results')) 
-        return 'OK ' + task_id
+        return redirect('/result/' + task_id)
 
 def detect_job(frames_dir, result_dir):
     files = os.listdir(frames_dir) 

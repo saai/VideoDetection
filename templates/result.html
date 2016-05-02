@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
+          rel="stylesheet">
+    <meta http-equiv="refresh" content="3">
+  </head>
+  <body>
+    <div class="container">
+    {{ loading_text }}
+
+    <div class="row">
+    	{% for path in paths %}
+	      <div class="col-md-3">
+		<a href="/static/{{ path }}" class="thumbnail">
+		  <img src="/static/{{ path }}"/>
+		</a>
+	      </div>
+    	{% endfor %}
+    </div>
+
+    </div>
+  </body>
+</html>
+ 
